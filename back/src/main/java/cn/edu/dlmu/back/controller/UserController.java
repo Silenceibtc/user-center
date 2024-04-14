@@ -6,6 +6,7 @@ import cn.edu.dlmu.back.model.domain.request.UserLoginRequest;
 import cn.edu.dlmu.back.model.domain.request.UserRegisterRequest;
 import cn.edu.dlmu.back.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
 
     @Resource
@@ -47,6 +49,8 @@ public class UserController {
 
     @PostMapping("/login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+
+        log.info("user login, params:{}", userLoginRequest);
 
         if (userLoginRequest == null) {
             return null;
