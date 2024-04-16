@@ -1,19 +1,14 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
-import {
-  LockOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import {
-  LoginForm,
-  ProFormCheckbox,
-  ProFormText,
-} from '@ant-design/pro-components';
-import { Alert, message, Tabs } from 'antd';
-import React, { useState } from 'react';
-import { history, useModel } from 'umi';
+import {login} from '@/services/ant-design-pro/api';
+import {LockOutlined, UserOutlined,} from '@ant-design/icons';
+import {LoginForm, ProFormCheckbox, ProFormText,} from '@ant-design/pro-components';
+import {Alert, Divider, message, Space, Tabs} from 'antd';
+import React, {useState} from 'react';
+import {history, Link, useModel} from 'umi';
 import styles from './index.less';
-import {SYSTEM_LOGO, MY_GITHUB} from "@/constants";
+import {MY_GITHUB, SYSTEM_LOGO} from "@/constants";
+import {text} from "express";
+
 const LoginMessage: React.FC<{
   content: string;
 }> = ({ content }) => (
@@ -132,23 +127,26 @@ const Login: React.FC = () => {
               marginBottom: 24,
             }}
           >
-            <ProFormCheckbox noStyle name="autoLogin">
-              自动登录
-            </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-              href={MY_GITHUB}
-              target='_blank'
-              rel="noreferrer"
-            >
-              忘记密码请联系作者Github
-            </a>
+            <Space split={<Divider type="vertical" />} size={20}>
+              <ProFormCheckbox noStyle name="autoLogin">
+                自动登录
+              </ProFormCheckbox>
+              <Link to={'/user/register'}>新用户注册</Link>
+              <a
+                style={{
+                  float: 'right',
+                }}
+                href={MY_GITHUB}
+                target='_blank'
+                rel="noreferrer"
+              >
+                忘记密码
+              </a>
+            </Space>
           </div>
         </LoginForm>
       </div>
-      <Footer />
+      <Footer/>
     </div>
   );
 };
