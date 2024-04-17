@@ -93,6 +93,20 @@ public class UserController {
         return userService.removeById(id);
     }
 
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        User user = (User) userObj;
+        if (user == null) {
+            return null;
+        }
+        Long userId = user.getId();
+        //获取最新的用户信息
+        //todo 校验用户是否合法
+        User currentUser = userService.getById(userId);
+        return userService.getSafetyUser(currentUser);
+    }
+
     /**
      * 判断是否为管理员
      *
@@ -100,8 +114,8 @@ public class UserController {
      * @return
      */
     private boolean isAdmin(HttpServletRequest request) {
-        Object object = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        User user = (User) object;
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        User user = (User) userObj;
         return user == null || user.getIdentity() != UserConstant.ADMIN;
     }
 }
