@@ -1,134 +1,186 @@
-import Footer from '@/components/Footer';
-import {register} from '@/services/ant-design-pro/api';
-import {LockOutlined, UserOutlined,} from '@ant-design/icons';
-import {LoginForm, ProFormText,} from '@ant-design/pro-components';
-import {message, Tabs} from 'antd';
-import React, {useState} from 'react';
-import {history} from 'umi';
-import styles from './index.less';
-import {SYSTEM_LOGO,} from "@/constants";
+import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import {ProTable, TableDropdown} from '@ant-design/pro-components';
+import {useRef} from 'react';
+import {searchUsers} from "@/services/ant-design-pro/api";
+import {Image} from "antd";
 
-const Register: React.FC = () => {
-  const [type, setType] = useState<string>('account');
 
-  const handleSubmit = async (values: API.RegisterParams) => {
-    //校验
-    const {userPassword, checkPassword} = values;
-    if (userPassword !== checkPassword){
-      message.error('两次输入的密码不一致');
-      return;
-    }
-    try {
-      // 注册
-      const id = await register({
-        ...values,
-        type,
-      });
-      if (id > 0) {
-        const defaultLoginSuccessMessage = '注册成功！';
-        message.success(defaultLoginSuccessMessage);
-        /** 此方法会跳转到 redirect 参数所在的位置 */
-        if (!history) return;
-        const {query} = history.location;
-        const {redirect} = query as {
-          redirect: string;
-        };
-        history.push('/user/login?redirect=' + redirect);
-        return;
-      } else {
-        throw new Error(`register error, id = ${id}`)
-      }
-    } catch (error) {
-      const defaultLoginFailureMessage = '注册失败，请重试！';
-      message.error(defaultLoginFailureMessage);
-    }
-  };
-  return (
-    <div className={styles.container}>
-      <div className={styles.content}>
-        <LoginForm
-          logo={<img alt="logo" src={SYSTEM_LOGO}/>}
-          title="User Center"
-          subTitle={'最懂你的编程学习社区'}
-          submitter={{
-            searchConfig:{
-              submitText:'注册'
-            }
-          }}
-          onFinish={async (values) => {
-            await handleSubmit(values as API.RegisterParams);
-          }}
-        >
-          <Tabs activeKey={type} onChange={setType}>
-            <Tabs.TabPane key="account" tab={'账号密码注册'}/>
-          </Tabs>
-          {type === 'account' && (
-            <>
-              <ProFormText
-                name="userAccount"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <UserOutlined className={styles.prefixIcon}/>,
-                }}
-                placeholder='请输入账号'
-                rules={[
-                  {
-                    required: true,
-                    message: '账号是必填项！',
-                  },
-                ]}
-              />
-              <ProFormText.Password
-                name="userPassword"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon}/>,
-                }}
-                placeholder='请输入密码'
-                rules={[
-                  {
-                    required: true,
-                    message: '密码是必填项！',
-                  },
-                  {
-                    min: 8,
-                    type: 'string',
-                    message: '密码长度必须大于 8！',
-                  },
-                ]}
-              />
-              <ProFormText.Password
-                name="checkPassword"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon}/>,
-                }}
-                placeholder='请确认密码'
-                rules={[
-                  {
-                    required: true,
-                    message: '密码是必填项！',
-                  },
-                  {
-                    min: 8,
-                    type: 'string',
-                    message: '密码长度必须大于 8！',
-                  },
-                ]}
-              />
-            </>
-          )}
-          <div
-            style={{
-              marginBottom: 24,
-            }}
-          >
-          </div>
-        </LoginForm>
-      </div>
-      <Footer/>
-    </div>
-  )
-    ;
+export const waitTimePromise = async (time: number = 100) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, time);
+  });
 };
-export default Register;
+
+export const waitTime = async (time: number = 100) => {
+  await waitTimePromise(time);
+};
+
+const columns: ProColumns<API.CurrentUser>[] = [
+  {
+    dataIndex: 'id',
+    valueType: 'indexBorder',
+    width: 48,
+  },
+  {
+    title: '用户名',
+    dataIndex: 'username',
+    copyable: true,
+  },
+  {
+    title: '用户账户',
+    dataIndex: 'userAccount',
+    copyable: true,
+  },
+  {
+    title: '头像',
+    dataIndex: 'avatarUrl',
+    render: (_, record) => (
+      <Image src={record.avatarUrl} width={100}></Image>
+    ),
+    copyable: true,
+  },
+  {
+    title: '性别',
+    dataIndex: 'gender',
+    valueEnum: {
+      0: {
+        text: '女',
+      },
+      1: {
+        text: '男'
+      }
+    }
+  },
+  {
+    title: '手机号',
+    dataIndex: 'phone',
+    copyable: true,
+  },
+  {
+    title: '邮箱',
+    dataIndex: 'email',
+    copyable: true,
+  },
+  {
+    title: '用户状态',
+    dataIndex: 'userStatus',
+  },
+  {
+    title: '用户权限',
+    dataIndex: 'identity',
+    valueType: 'select',
+    valueEnum: {
+      0: {
+        text: '管理员',
+        status: 'Error',
+      },
+      1: {
+        text: '普通用户',
+        status: 'Success',
+      },
+    },
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createTime',
+    valueType: 'dateTime',
+    sorter: true,
+    hideInSearch: true,
+  },
+  {
+    disable: true,
+    title: '状态',
+    dataIndex: 'state',
+    filters: true,
+    onFilter: true,
+    ellipsis: true,
+
+  },
+  {
+    title: '操作',
+    valueType: 'option',
+    key: 'option',
+    render: (text, record, _, action) => [
+      <a
+        key="editable"
+        onClick={() => {
+          action?.startEditable?.(record.id);
+        }}
+      >
+        编辑
+      </a>,
+      <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
+        查看
+      </a>,
+      <TableDropdown
+        key="actionGroup"
+        onSelect={() => action?.reload()}
+        menus={[
+          {key: 'copy', name: '复制'},
+          {key: 'delete', name: '删除'},
+        ]}
+      />,
+    ],
+  },
+];
+
+export default () => {
+  const actionRef = useRef<ActionType>();
+  return (
+    <ProTable<API.CurrentUser>
+      columns={columns}
+      actionRef={actionRef}
+      cardBordered
+      request={async (params, sort, filter) => {
+        console.log(sort, filter);
+        await waitTime(2000);
+        const userList = await searchUsers();
+        return {
+          data: userList,
+        }
+      }}
+      editable={{
+        type: 'multiple',
+      }}
+      columnsState={{
+        persistenceKey: 'pro-table-singe-demos',
+        persistenceType: 'localStorage',
+        defaultValue: {
+          option: {fixed: 'right', disable: true},
+        },
+        onChange(value) {
+          console.log('value: ', value);
+        },
+      }}
+      rowKey="id"
+      search={{
+        labelWidth: 'auto',
+      }}
+      options={{
+        setting: {
+          listsHeight: 400,
+        },
+      }}
+      form={{
+        // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+        syncToUrl: (values, type) => {
+          if (type === 'get') {
+            return {
+              ...values,
+              created_at: [values.startTime, values.endTime],
+            };
+          }
+          return values;
+        },
+      }}
+      pagination={{
+        pageSize: 5,
+        onChange: (page) => console.log(page),
+      }}
+      dateFormatter="string"
+      headerTitle="高级表格"
+    />
+  );
+};

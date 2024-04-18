@@ -11,6 +11,7 @@ declare namespace API {
     phone?: string;
     email?: string;
     userStatus: number;
+    identity: number;
     createTime: Date;
   };
 
