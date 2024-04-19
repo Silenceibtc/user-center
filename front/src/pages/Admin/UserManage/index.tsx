@@ -37,7 +37,7 @@ const columns: ProColumns<API.CurrentUser>[] = [
     title: '头像',
     dataIndex: 'avatarUrl',
     render: (_, record) => (
-      <Image src={record.avatarUrl} width={100}></Image>
+      <Image src={record.avatarUrl} width={100} height={100}></Image>
     ),
     copyable: true,
   },
@@ -66,6 +66,11 @@ const columns: ProColumns<API.CurrentUser>[] = [
   {
     title: '用户状态',
     dataIndex: 'userStatus',
+    valueEnum: {
+      0 : {
+        text: '正常'
+      }
+    }
   },
   {
     title: '用户权限',
@@ -90,15 +95,6 @@ const columns: ProColumns<API.CurrentUser>[] = [
     hideInSearch: true,
   },
   {
-    disable: true,
-    title: '状态',
-    dataIndex: 'state',
-    filters: true,
-    onFilter: true,
-    ellipsis: true,
-
-  },
-  {
     title: '操作',
     valueType: 'option',
     key: 'option',
@@ -110,9 +106,6 @@ const columns: ProColumns<API.CurrentUser>[] = [
         }}
       >
         编辑
-      </a>,
-      <a href={record.url} target="_blank" rel="noopener noreferrer" key="view">
-        查看
       </a>,
       <TableDropdown
         key="actionGroup"
