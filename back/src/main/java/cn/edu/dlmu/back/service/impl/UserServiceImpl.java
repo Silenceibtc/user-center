@@ -1,6 +1,8 @@
 package cn.edu.dlmu.back.service.impl;
 
+import cn.edu.dlmu.back.common.ErrorCode;
 import cn.edu.dlmu.back.constant.UserConstant;
+import cn.edu.dlmu.back.exception.BusinessException;
 import cn.edu.dlmu.back.mapper.UserMapper;
 import cn.edu.dlmu.back.model.domain.User;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -32,38 +34,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String SALT = "Silenceibtc";
 
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
-        // todo 后期将返回修改为自定义异常
         //1.校验
-
         //非空
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         //账户不小于四位
         if (userAccount.length() < 4) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称过短");
         }
         //账户不包含特殊字符
         String regEx = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。 ，、？]";
         Pattern pattern = Pattern.compile(regEx);
         Matcher matcher = pattern.matcher(userAccount);
         if (matcher.find()) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称包含特殊字符");
         }
         //密码不小于8位
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过短");
         }
         //密码与校验码相同
         if (!userPassword.equals(checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
         }
         //账户不能重复（对数据库操作，放在最后以优化性能）
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         Long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户重复");
         }
 
         //2.加密密码
@@ -76,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setIsDelete(0);
         boolean result = this.save(user);
         if (!result) {
-            return -1;
+            throw new BusinessException(ErrorCode.DATABASE_ERROR, "数据库插入失败");
         }
 
         return user.getId();
@@ -87,22 +87,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //1.校验
         //非空
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         //账户不小于四位
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称过短");
         }
         //账户不包含特殊字符
         String regEx = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。 ，、？]";
         Pattern pattern = Pattern.compile(regEx);
         Matcher matcher = pattern.matcher(userAccount);
         if (matcher.find()) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称包含特殊字符");
         }
         //密码不小于8位
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过短");
         }
 
         //2.加密密码
@@ -114,7 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //用户不存在
         if (user == null) {
             log.info("user login failed, userAccount can not match userPassword");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号不存在");
         }
 
         //3.对用户信息进行脱敏

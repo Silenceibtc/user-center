@@ -1,8 +1,10 @@
 package cn.edu.dlmu.back.controller;
 
 import cn.edu.dlmu.back.common.BaseResponse;
+import cn.edu.dlmu.back.common.ErrorCode;
 import cn.edu.dlmu.back.common.ResultUtils;
 import cn.edu.dlmu.back.constant.UserConstant;
+import cn.edu.dlmu.back.exception.BusinessException;
 import cn.edu.dlmu.back.model.domain.User;
 import cn.edu.dlmu.back.model.domain.request.UserLoginRequest;
 import cn.edu.dlmu.back.model.domain.request.UserRegisterRequest;
@@ -35,7 +37,7 @@ public class UserController {
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
 
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         String userAccount = userRegisterRequest.getUserAccount();
@@ -43,7 +45,7 @@ public class UserController {
         String checkPassword = userRegisterRequest.getCheckPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
@@ -56,14 +58,14 @@ public class UserController {
         log.info("user login, params:{}", userLoginRequest);
 
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
         User user = userService.userLogin(userAccount, userPassword, request);
@@ -73,7 +75,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         int result = userService.userLogout(request);
         return ResultUtils.success(result);
@@ -83,7 +85,7 @@ public class UserController {
     public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         //鉴权
         if (isAdmin(request)) {
-            return null;
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
         //查询用户信息
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -99,10 +101,10 @@ public class UserController {
     @PostMapping("/delete")
     public BaseResponse<Boolean> searchUsers(Long id, HttpServletRequest request) {
         if (isAdmin(request)) {
-            return null;
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id <= 0) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         boolean result = userService.removeById(id);
         return ResultUtils.success(result);
@@ -113,7 +115,7 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         User user = (User) userObj;
         if (user == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Long userId = user.getId();
         //获取最新的用户信息

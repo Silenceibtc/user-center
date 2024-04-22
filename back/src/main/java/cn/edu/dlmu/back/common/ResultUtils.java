@@ -27,4 +27,16 @@ public class ResultUtils {
     public static <T> BaseResponse<T> error(ErrorCode errorCode) {
         return new BaseResponse<>(errorCode);
     }
+
+    /**
+     * 失败
+     *
+     * @param code 自定义状态码
+     * @param message 自定义信息
+     * @param description 自定义描述
+     * @return 通用结果返回对象
+     */
+    public static <T> BaseResponse<T> error(int code, String message, String description) {
+        return new BaseResponse<>(code, null, message, description);
+    }
 }
