@@ -7,7 +7,6 @@ import React, {useState} from 'react';
 import {history, Link, useModel} from 'umi';
 import styles from './index.less';
 import {MY_GITHUB, SYSTEM_LOGO} from "@/constants";
-import {text} from "express";
 
 const LoginMessage: React.FC<{
   content: string;

@@ -1,5 +1,7 @@
 package cn.edu.dlmu.back.controller;
 
+import cn.edu.dlmu.back.common.BaseResponse;
+import cn.edu.dlmu.back.common.ResultUtils;
 import cn.edu.dlmu.back.constant.UserConstant;
 import cn.edu.dlmu.back.model.domain.User;
 import cn.edu.dlmu.back.model.domain.request.UserLoginRequest;
@@ -30,7 +32,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
 
         if (userRegisterRequest == null) {
             return null;
@@ -44,11 +46,12 @@ public class UserController {
             return null;
         }
 
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
 
         log.info("user login, params:{}", userLoginRequest);
 
@@ -63,22 +66,24 @@ public class UserController {
             return null;
         }
 
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
     }
 
     @PostMapping("/logout")
-    public Integer userLogout(HttpServletRequest request) {
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request == null) {
             return null;
         }
-        return userService.userLogout(request);
+        int result = userService.userLogout(request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(String username, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         //鉴权
         if (isAdmin(request)) {
-            return new ArrayList<>();
+            return null;
         }
         //查询用户信息
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -87,22 +92,24 @@ public class UserController {
         }
         List<User> userList = userService.list(queryWrapper);
         //用户信息脱敏
-        return userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        List<User> safetyUserList = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(safetyUserList);
     }
 
     @PostMapping("/delete")
-    public boolean searchUsers(Long id, HttpServletRequest request) {
+    public BaseResponse<Boolean> searchUsers(Long id, HttpServletRequest request) {
         if (isAdmin(request)) {
-            return false;
+            return null;
         }
         if (id <= 0) {
-            return false;
+            return null;
         }
-        return userService.removeById(id);
+        boolean result = userService.removeById(id);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         User user = (User) userObj;
         if (user == null) {
@@ -112,7 +119,8 @@ public class UserController {
         //获取最新的用户信息
         //todo 校验用户是否合法
         User currentUser = userService.getById(userId);
-        return userService.getSafetyUser(currentUser);
+        User safetyUser = userService.getSafetyUser(currentUser);
+        return ResultUtils.success(safetyUser);
     }
 
     /**
