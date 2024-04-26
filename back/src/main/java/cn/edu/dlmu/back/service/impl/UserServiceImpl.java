@@ -54,6 +54,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过短");
         }
+        //密码不大于16位
+        if (userPassword.length() > 10) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过长");
+        }
         //密码与校验码相同
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");

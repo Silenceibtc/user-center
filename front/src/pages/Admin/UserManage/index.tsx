@@ -67,7 +67,7 @@ const columns: ProColumns<API.CurrentUser>[] = [
     title: '用户状态',
     dataIndex: 'userStatus',
     valueEnum: {
-      0 : {
+      0: {
         text: '正常'
       }
     }

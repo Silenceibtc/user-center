@@ -1,13 +1,8 @@
 spring:
+  profiles:
+    active: dev
   application:
     name: user-center-back
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: Mysql.86219
-    url: jdbc:mysql://localhost:3306/user-center
-  session:
-    timeout: 86400
 server:
   port: 8080
   servlet:
