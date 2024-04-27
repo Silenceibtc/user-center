@@ -50,7 +50,7 @@ const Login: React.FC = () => {
         const { redirect } = query as {
           redirect: string;
         };
-        history.push(redirect === '' || '/');
+        history.push('/' || redirect === '');
         return;
       }
       // 如果失败去设置用户错误信息

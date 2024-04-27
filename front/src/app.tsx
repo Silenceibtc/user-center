@@ -22,7 +22,7 @@ export const initialStateConfig = {
 };
 
 export const request: RequestConfig = {
-  prefix: process.env.NODE_ENV === 'production' ? 'http://user-center.cn/api' : '/api',
+  prefix: process.env.NODE_ENV === 'production' ? 'http://150.158.149.62:8080/api' : '/api',
   timeout: 10000,
   requestInterceptors: [customRequestInterceptor],
   responseInterceptors: [customResponseInterceptor],
