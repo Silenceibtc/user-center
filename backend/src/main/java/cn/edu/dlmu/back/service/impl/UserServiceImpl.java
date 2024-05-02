@@ -50,12 +50,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (matcher.find()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称包含特殊字符");
         }
+        //账户不小于四位
+        if (userAccount.length() > 12) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号名称过短");
+        }
         //密码不小于8位
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过短");
         }
         //密码不大于16位
-        if (userPassword.length() > 10) {
+        if (userPassword.length() > 16) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户密码过长");
         }
         //密码与校验码相同
