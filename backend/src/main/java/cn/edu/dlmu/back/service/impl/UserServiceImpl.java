@@ -5,18 +5,26 @@ import cn.edu.dlmu.back.constant.UserConstant;
 import cn.edu.dlmu.back.exception.BusinessException;
 import cn.edu.dlmu.back.mapper.UserMapper;
 import cn.edu.dlmu.back.model.domain.User;
+import cn.edu.dlmu.back.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import cn.edu.dlmu.back.service.UserService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Silenceibtc
@@ -156,6 +164,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public int userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return 1;
+    }
+
+    /**
+     * 根据标签搜索用户（在内存中过滤）
+     *
+     * @param tagNameList 标签列表
+     * @return
+     */
+    @Override
+    public List<User> searchUsersByTags(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 1. 先将所有用户查询出来
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
+        return userList.stream().filter(user -> {
+            String tagStr = user.getTags();
+            Set<String> tempTagNameSet = gson.fromJson(tagStr, new TypeToken<Set<String>>(){}.getType());
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+            for (String tagName : tagNameList) {
+                if (!tempTagNameSet.contains(tagName)) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    @Deprecated
+    private List<User> searchUsersByTagsBySQL(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 拼接查询条件
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        for (String tag : tagNameList) {
+            queryWrapper = queryWrapper.like("tags", tag);
+        }
+        // 用户查询并脱敏
+        List<User> userList = userMapper.selectList(queryWrapper).stream().map(this::getSafetyUser).collect(Collectors.toList());
+        return userList;
     }
 }
 

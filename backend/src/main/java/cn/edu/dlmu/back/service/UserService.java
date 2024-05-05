@@ -4,6 +4,7 @@ import cn.edu.dlmu.back.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author Silenceibtc
@@ -43,4 +44,12 @@ public interface UserService extends IService<User> {
      * @param request
      */
     int userLogout(HttpServletRequest request);
+
+    /**
+     * 根据标签搜索用户
+     *
+     * @param tagNameList 标签列表
+     * @return 符合条件的脱敏后的所有用户
+     */
+    List<User> searchUsersByTags(List<String> tagNameList);
 }

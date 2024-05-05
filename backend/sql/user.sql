@@ -19,3 +19,5 @@ create table user
     identity     int      default 1                 not null comment '用户身份 0 - 管理员 1 - 普通用户'
 )
     comment '用户表';
+
+alter table user add column tags varchar(1024) null comment '标签列表';
